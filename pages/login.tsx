@@ -1,6 +1,6 @@
 import Loading from '@/components/Loading';
 import { LocalStorageKey, Route } from '@/shared/constants';
-import { useGetSpotifyTokens } from '@/shared/spotify/login/useGetSpotifyTokens';
+import { useGetSpotifyLoginData } from '@/shared/spotify/login/useGetSpotifyLoginData';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
@@ -8,7 +8,7 @@ import { useEffect } from 'react';
 export default function Login() {
   const { query, push, isReady } = useRouter();
 
-  const { getSpotifyTokenMutation, isErrorGetSpotifyToken } = useGetSpotifyTokens();
+  const { getSpotifyLoginDataMutation, isErrorGetSpotifyToken } = useGetSpotifyLoginData();
 
   useEffect(() => {
     if (localStorage.getItem(LocalStorageKey.SPOTIFY_LOGIN_DATA)) {
@@ -21,8 +21,8 @@ export default function Login() {
     const code = typeof query.code == 'object' ? query.code[0] : query.code;
     const state = typeof query.state == 'object' ? query.state[0] : query.state;
 
-    getSpotifyTokenMutation({ code, state, codeVerifier });
-  }, [getSpotifyTokenMutation, isReady, push, query.code, query.state]);
+    getSpotifyLoginDataMutation({ code, state, codeVerifier });
+  }, [getSpotifyLoginDataMutation, isReady, push, query.code, query.state]);
 
   useEffect(() => {
     if (!isErrorGetSpotifyToken) return;

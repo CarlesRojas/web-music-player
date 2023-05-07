@@ -19,7 +19,7 @@ export const SpotifyLoginDataSchema = z.object({
 
 export type SpotifyLoginData = z.infer<typeof SpotifyLoginDataSchema>;
 
-const getSpotifyToken = async ({ code, state, codeVerifier }: GetSpotifyTokenMutation) => {
+const getSpotifyLoginData = async ({ code, state, codeVerifier }: GetSpotifyTokenMutation) => {
   if (!code || !state || !codeVerifier) throw new AxiosError('Missing code, state or codeVerifier');
 
   let data = new URLSearchParams({
@@ -37,14 +37,14 @@ const getSpotifyToken = async ({ code, state, codeVerifier }: GetSpotifyTokenMut
   });
 };
 
-export const useGetSpotifyTokens = () => {
+export const useGetSpotifyLoginData = () => {
   const { push } = useRouter();
   const {
-    mutate: getSpotifyTokenMutation,
+    mutate: getSpotifyLoginDataMutation,
     isError: isErrorGetSpotifyToken,
     data
   } = useMutation({
-    mutationFn: getSpotifyToken
+    mutationFn: getSpotifyLoginData
   });
 
   if (data?.data) {
@@ -64,7 +64,7 @@ export const useGetSpotifyTokens = () => {
   }
 
   return {
-    getSpotifyTokenMutation,
+    getSpotifyLoginDataMutation,
     isErrorGetSpotifyToken
   };
 };
