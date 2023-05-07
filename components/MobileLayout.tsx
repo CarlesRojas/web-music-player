@@ -1,5 +1,3 @@
-'use client';
-
 import { clamp } from '@/shared/interpolate';
 import { useDrag } from '@use-gesture/react';
 import { motion, useSpring, useTransform } from 'framer-motion';
