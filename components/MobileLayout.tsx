@@ -31,7 +31,6 @@ export default function MobileLayout() {
     ({ cancel, canceled, last, offset: [, yOffset], movement: [, yMov], direction: [, yDir], velocity: [, yVel] }) => {
       if (canceled) return;
       let yDispl = clamp(yOffset / window.innerHeight);
-      console.log(yDispl);
 
       if (last) {
         if (state === State.PLAYING) yDispl < 0.3 ? openPlaying() : openLibrary();
