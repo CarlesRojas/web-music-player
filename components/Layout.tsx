@@ -3,37 +3,46 @@
 import useResize from '@/hooks/useResize';
 import { clamp } from '@/shared/interpolate';
 import { useDrag } from '@use-gesture/react';
-import { motion, useMotionValue } from 'framer-motion';
+import { motion, useMotionValue, useTransform } from 'framer-motion';
 import { useState } from 'react';
 import Controls from './Controls';
 import Library from './Library';
 import Playing from './Playing';
 
+enum State {
+  PLAYING = 0,
+  LIBRARY = 1
+}
+
 export default function Layout() {
   const [limits, setLimits] = useState({ min: 0.25 * window.innerWidth, max: window.innerWidth });
   useResize(() => setLimits({ min: 0.25 * window.innerWidth, max: window.innerWidth }));
 
-  let height = useMotionValue(limits.max);
-  // let x = useMotionValue(0);
-  // let y = useMotionValue(0);
+  let position = useMotionValue(0);
+  const [state, setState] = useState(State.PLAYING);
 
   const bindDrag = useDrag(({ active, movement: [mx, my], direction: [, yDir], velocity }) => {
-    height.set(clamp(limits.max - my, limits.min, limits.max));
-    // x.set(mx);
-    // y.set(my);
+    let yDisplacement = clamp((Math.abs(my) * 2) / window.innerHeight);
+    position.set(yDisplacement);
   });
 
   return (
     <main className="w-screen h-screen flex flex-col" {...bindDrag()}>
-      <motion.div className="w-full " style={{}}>
+      <motion.div
+        className="w-full "
+        style={{ height: useTransform(position, [0, 1], ['calc(0vh - 0vw)', 'calc(100vh - 25vw)']) }}
+      >
         <Library />
       </motion.div>
 
-      <motion.div className="w-full" style={{ height }}>
+      <motion.div className="w-full" style={{ height: useTransform(position, [0, 1], ['100vw', '25vw']) }}>
         <Controls />
       </motion.div>
 
-      <motion.div className="w-full grow" style={{}}>
+      <motion.div
+        className="w-full"
+        style={{ height: useTransform(position, [0, 1], ['calc(100vh - 100vw)', 'calc(0vh - 0vw)']) }}
+      >
         <Playing />
       </motion.div>
     </main>
