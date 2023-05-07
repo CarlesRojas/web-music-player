@@ -2,7 +2,7 @@
 
 import { clamp } from '@/shared/interpolate';
 import { useDrag } from '@use-gesture/react';
-import { motion, useMotionValue, useTransform } from 'framer-motion';
+import { motion, useSpring, useTransform } from 'framer-motion';
 import { useState } from 'react';
 import Controls from './Controls';
 import Library from './Library';
@@ -14,13 +14,47 @@ enum State {
 }
 
 export default function Layout() {
-  let position = useMotionValue(0);
+  let position = useSpring(0, { bounce: 0 });
+  let positionPx = useSpring(0, { bounce: 0 });
   const [state, setState] = useState(State.PLAYING);
 
-  const bindDrag = useDrag(({ active, movement: [mx, my], direction: [, yDir], velocity }) => {
-    let yDisplacement = clamp((Math.abs(my) * 2) / window.innerHeight);
-    position.set(yDisplacement);
-  });
+  const openPlaying = () => {
+    console.log('OPEN PLAYING');
+    setState(State.PLAYING);
+    position.set(0);
+    positionPx.set(0);
+  };
+
+  const openLibrary = () => {
+    console.log('OPEN LIBRARY');
+    setState(State.LIBRARY);
+    position.set(1);
+    positionPx.set(window.innerHeight);
+  };
+
+  const bindDrag = useDrag(
+    ({ cancel, canceled, last, offset: [, yOffset], movement: [, yMov], direction: [, yDir], velocity: [, yVel] }) => {
+      if (canceled) return;
+      let yDispl = clamp(yOffset / window.innerHeight);
+      console.log(yDispl);
+
+      if (last) {
+        if (state === State.PLAYING) yDispl < 0.25 ? openPlaying() : openLibrary();
+        if (state === State.LIBRARY) yDispl > 0.75 ? openLibrary() : openPlaying();
+        return;
+      }
+
+      if (Math.abs(yMov) > window.innerHeight / 2 || Math.abs(yVel) > 2) {
+        yDir < 0 ? openPlaying() : openLibrary();
+        cancel();
+        return;
+      }
+
+      position.jump(yDispl);
+      positionPx.jump(yDispl * window.innerHeight);
+    },
+    { axis: 'y', from: () => [0, positionPx.get()] }
+  );
 
   return (
     <main className="w-screen h-screen flex flex-col" {...bindDrag()}>
