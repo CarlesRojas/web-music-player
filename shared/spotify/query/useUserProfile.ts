@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { z } from 'zod';
 import { axiosSpotifyConfig } from '../axiosSpotifyConfig';
-import { getSpotifyLoginData } from '../login/useSpotifyLoginData';
+import { useSpotifyLoginData } from '../login/useSpotifyLoginData';
 
 const UserProfileSchema = z.object({
   name: z.string(),
@@ -13,10 +13,11 @@ const UserProfileSchema = z.object({
 
 export type UserProfile = z.infer<typeof UserProfileSchema>;
 
-const getUserProfile = async () => {
-  const loginData = await getSpotifyLoginData();
+const getUserProfile = async (accessToken?: string) => {
+  if (!accessToken) throw new Error('No access token provided');
+
   const response = await axios({
-    ...axiosSpotifyConfig(loginData.accessToken),
+    ...axiosSpotifyConfig(accessToken),
     url: `${env.NEXT_PUBLIC_SPOTIFY_API_BASE_URL}/me`,
     method: 'get'
   });
@@ -29,11 +30,15 @@ const getUserProfile = async () => {
 };
 
 export const useUserProfile = () => {
+  const { spotifyLoginData } = useSpotifyLoginData();
+
   const {
     data: userProfile,
     isError: isErrorUserProfile,
     isLoading: isLodingUserProfile
-  } = useQuery(['userProfile'], () => getUserProfile());
+  } = useQuery(['userProfile'], () => getUserProfile(spotifyLoginData?.accessToken), {
+    enabled: !!spotifyLoginData?.accessToken
+  });
 
   return { userProfile, isErrorUserProfile, isLodingUserProfile };
 };

@@ -20,6 +20,7 @@ specifiers:
   react: 18.2.0
   react-dom: 18.2.0
   react-icons: ^4.8.0
+  spotify-web-playback: ^1.4.0
   tailwindcss: 3.3.2
   typescript: 5.0.4
   zod: ^3.21.4
@@ -44,6 +45,7 @@ dependencies:
   react: 18.2.0
   react-dom: 18.2.0_react@18.2.0
   react-icons: 4.8.0_react@18.2.0
+  spotify-web-playback: 1.4.0
   tailwindcss: 3.3.2
   typescript: 5.0.4
   zod: 3.21.4
@@ -2551,6 +2553,10 @@ packages:
   /source-map-js/1.0.2:
     resolution: {integrity: sha512-R0XvVJ9WusLiqTCEiGCmICCMplcCkIwwR11mOSD9CR5u+IXYdiseeEuXCVAjS54zqwkLcPNnmU4OeJ6tUrWhDw==}
     engines: {node: '>=0.10.0'}
+    dev: false
+
+  /spotify-web-playback/1.4.0:
+    resolution: {integrity: sha512-hZsYJ4xgkz7eUe9QVM+7wqT1hhFTRrW5q2VDVRK46gfIuIka6wsN/DQnL7Nf8OvvcFdRf0ksjP64ARN/wPljtA==}
     dev: false
 
   /stop-iteration-iterator/1.0.0:

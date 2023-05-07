@@ -26,7 +26,7 @@ const loginWithSpotify = async () => {
   let args = new URLSearchParams({
     response_type: 'code',
     client_id: env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID,
-    scope: 'user-read-private user-read-email',
+    scope: 'streaming user-read-private user-read-email',
     redirect_uri: env.NEXT_PUBLIC_SPOTIFY_REDIRECT_URI,
     state: generateRandomString(16),
     code_challenge_method: 'S256',
