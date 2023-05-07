@@ -9,7 +9,10 @@ const montserrat = Montserrat({ subsets: ['latin'] });
 export default function RootLayout({ children }: { children: ReactNode }) {
   useEffect(() => {
     if ('serviceWorker' in navigator)
-      window.addEventListener('load', () => navigator.serviceWorker.register('/sw.mjs'));
+      // window.addEventListener('load', () => {
+      // console.log('LOAD');
+      navigator.serviceWorker.register('/sw.mjs');
+    // });
   });
 
   return (
