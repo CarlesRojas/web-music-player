@@ -25,7 +25,7 @@ export default function MobileLayout() {
     position.set(1);
   };
 
-  const bindDrag = useDrag(
+  const bindVerticalDrag = useDrag(
     ({ cancel, canceled, last, offset: [, yOffset], movement: [, yMov], direction: [, yDir], velocity: [, yVel] }) => {
       if (canceled) return;
       let yDispl = clamp(yOffset / window.innerHeight);
@@ -48,7 +48,7 @@ export default function MobileLayout() {
   );
 
   return (
-    <main className="w-screen h-screen flex flex-col overflow-hidden" {...bindDrag()}>
+    <main className="w-screen h-screen flex flex-col overflow-hidden">
       <motion.div
         className="w-full overflow-hidden"
         style={{ height: useTransform(position, [0, 1], ['calc(0vh - 0vw)', 'calc(100vh - 25vw)']) }}
@@ -60,7 +60,7 @@ export default function MobileLayout() {
         className="w-full overflow-hidden"
         style={{ height: useTransform(position, [0, 1], ['100vw', '25vw']) }}
       >
-        <Controls />
+        <Controls bindVerticalDrag={bindVerticalDrag} />
       </motion.div>
 
       <motion.div
