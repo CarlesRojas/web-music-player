@@ -1,10 +1,10 @@
-import Layout from '@/components/Layout';
+import MobileLayout from '@/components/MobileLayout';
 
 export const metadata = {
-  title: 'Spot - Now Playing',
+  title: 'Spot',
   description: 'Web based client for listening to Spotify.'
 };
 
 export default function Home() {
-  return <Layout />;
+  return <MobileLayout />;
 }

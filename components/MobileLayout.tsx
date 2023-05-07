@@ -13,30 +13,24 @@ enum State {
   LIBRARY = 1
 }
 
-export default function Layout() {
+export default function MobileLayout() {
   let position = useSpring(0, { bounce: 0 });
-  let positionPx = useSpring(0, { bounce: 0 });
   const [state, setState] = useState(State.PLAYING);
 
   const openPlaying = () => {
-    console.log('OPEN PLAYING');
     setState(State.PLAYING);
     position.set(0);
-    positionPx.set(0);
   };
 
   const openLibrary = () => {
-    console.log('OPEN LIBRARY');
     setState(State.LIBRARY);
     position.set(1);
-    positionPx.set(window.innerHeight);
   };
 
   const bindDrag = useDrag(
     ({ cancel, canceled, last, offset: [, yOffset], movement: [, yMov], direction: [, yDir], velocity: [, yVel] }) => {
       if (canceled) return;
       let yDispl = clamp(yOffset / window.innerHeight);
-      console.log(yDispl);
 
       if (last) {
         if (state === State.PLAYING) yDispl < 0.25 ? openPlaying() : openLibrary();
@@ -44,16 +38,15 @@ export default function Layout() {
         return;
       }
 
-      if (Math.abs(yMov) > window.innerHeight / 2 || Math.abs(yVel) > 2) {
+      if (Math.abs(yMov) > window.innerHeight / 2 || Math.abs(yVel) > 4) {
         yDir < 0 ? openPlaying() : openLibrary();
         cancel();
         return;
       }
 
       position.jump(yDispl);
-      positionPx.jump(yDispl * window.innerHeight);
     },
-    { axis: 'y', from: () => [0, positionPx.get()] }
+    { axis: 'y', from: () => [0, position.get() * window.innerHeight] }
   );
 
   return (
