@@ -1,6 +1,5 @@
 'use client';
 
-import useResize from '@/hooks/useResize';
 import { clamp } from '@/shared/interpolate';
 import { useDrag } from '@use-gesture/react';
 import { motion, useMotionValue, useTransform } from 'framer-motion';
@@ -15,9 +14,6 @@ enum State {
 }
 
 export default function Layout() {
-  const [limits, setLimits] = useState({ min: 0.25 * window.innerWidth, max: window.innerWidth });
-  useResize(() => setLimits({ min: 0.25 * window.innerWidth, max: window.innerWidth }));
-
   let position = useMotionValue(0);
   const [state, setState] = useState(State.PLAYING);
 
