@@ -9,7 +9,7 @@ export interface RefreshSpotifyTokenMutation {
   refreshToken?: string;
 }
 
-export const refreshSpotifyLoginData = async ({ refreshToken }: RefreshSpotifyTokenMutation) => {
+const refreshSpotifyLoginData = async ({ refreshToken }: RefreshSpotifyTokenMutation) => {
   if (!refreshToken) throw new AxiosError('Missing refreshToken');
 
   return axios({
@@ -20,7 +20,7 @@ export const refreshSpotifyLoginData = async ({ refreshToken }: RefreshSpotifyTo
         'Basic ' +
         Buffer.from(`${env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID}:${env.NEXT_PUBLIC_SPOTIFY_CLIENT_SECRET}`).toString('base64')
     },
-    url: `${env.NEXT_PUBLIC_SPOTIFY_API_BASE_URL}/api/token`,
+    url: `${env.NEXT_PUBLIC_SPOTIFY_ACCOUNT_API_BASE_URL}/api/token`,
     data: {
       grant_type: 'refresh_token',
       refresh_token: refreshToken,
@@ -29,7 +29,7 @@ export const refreshSpotifyLoginData = async ({ refreshToken }: RefreshSpotifyTo
   });
 };
 
-const getSpotifyLoginData = async () => {
+export const getSpotifyLoginData = async () => {
   const rawLoginData = localStorage.getItem(LocalStorageKey.SPOTIFY_LOGIN_DATA) as string;
   let loginData = SpotifyLoginDataSchema.parse(JSON.parse(rawLoginData));
 
@@ -41,9 +41,10 @@ const getSpotifyLoginData = async () => {
       expireDate: Date.now() + response.data.expires_in * 1000
     });
     loginData = refreshedSpotifyLoginData;
+
+    localStorage.setItem(LocalStorageKey.SPOTIFY_LOGIN_DATA, JSON.stringify(loginData));
   }
 
-  localStorage.setItem(LocalStorageKey.SPOTIFY_LOGIN_DATA, JSON.stringify(loginData));
   return loginData;
 };
 

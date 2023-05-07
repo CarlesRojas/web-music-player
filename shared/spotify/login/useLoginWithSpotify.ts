@@ -33,7 +33,7 @@ const loginWithSpotify = async () => {
     code_challenge: codeChallenge
   });
 
-  (window as Window).location = `${env.NEXT_PUBLIC_SPOTIFY_API_BASE_URL}/authorize?${args}`;
+  (window as Window).location = `${env.NEXT_PUBLIC_SPOTIFY_ACCOUNT_API_BASE_URL}/authorize?${args}`;
 };
 
 export const useLoginWithSpotify = () => {

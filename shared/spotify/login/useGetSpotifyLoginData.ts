@@ -32,7 +32,7 @@ const getSpotifyLoginData = async ({ code, state, codeVerifier }: GetSpotifyToke
 
   return axios({
     method: 'post',
-    url: `${env.NEXT_PUBLIC_SPOTIFY_API_BASE_URL}/api/token`,
+    url: `${env.NEXT_PUBLIC_SPOTIFY_ACCOUNT_API_BASE_URL}/api/token`,
     data
   });
 };
