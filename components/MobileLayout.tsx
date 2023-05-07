@@ -31,10 +31,11 @@ export default function MobileLayout() {
     ({ cancel, canceled, last, offset: [, yOffset], movement: [, yMov], direction: [, yDir], velocity: [, yVel] }) => {
       if (canceled) return;
       let yDispl = clamp(yOffset / window.innerHeight);
+      console.log(yDispl);
 
       if (last) {
-        if (state === State.PLAYING) yDispl < 0.25 ? openPlaying() : openLibrary();
-        if (state === State.LIBRARY) yDispl > 0.75 ? openLibrary() : openPlaying();
+        if (state === State.PLAYING) yDispl < 0.3 ? openPlaying() : openLibrary();
+        if (state === State.LIBRARY) yDispl > 0.7 ? openLibrary() : openPlaying();
         return;
       }
 
@@ -50,20 +51,23 @@ export default function MobileLayout() {
   );
 
   return (
-    <main className="w-screen h-screen flex flex-col" {...bindDrag()}>
+    <main className="w-screen h-screen flex flex-col overflow-hidden" {...bindDrag()}>
       <motion.div
-        className="w-full "
+        className="w-full overflow-hidden"
         style={{ height: useTransform(position, [0, 1], ['calc(0vh - 0vw)', 'calc(100vh - 25vw)']) }}
       >
         <Library />
       </motion.div>
 
-      <motion.div className="w-full" style={{ height: useTransform(position, [0, 1], ['100vw', '25vw']) }}>
+      <motion.div
+        className="w-full overflow-hidden"
+        style={{ height: useTransform(position, [0, 1], ['100vw', '25vw']) }}
+      >
         <Controls />
       </motion.div>
 
       <motion.div
-        className="w-full"
+        className="w-full overflow-hidden"
         style={{ height: useTransform(position, [0, 1], ['calc(100vh - 100vw)', 'calc(0vh - 0vw)']) }}
       >
         <Playing />
