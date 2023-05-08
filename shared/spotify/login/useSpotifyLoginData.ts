@@ -3,7 +3,7 @@ import { LocalStorageKey, Route } from '@/shared/constants';
 import { useQuery } from '@tanstack/react-query';
 import axios, { AxiosError } from 'axios';
 import { useRouter } from 'next/router';
-import { SpotifyLoginData, SpotifyLoginDataSchema } from './useGetSpotifyLoginData';
+import { SpotifyLoginData, SpotifyLoginDataSchema } from '../schemas';
 
 export interface RefreshSpotifyTokenMutation {
   refreshToken?: string;

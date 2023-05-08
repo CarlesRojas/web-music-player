@@ -3,21 +3,13 @@ import { LocalStorageKey, Route } from '@/shared/constants';
 import { useMutation } from '@tanstack/react-query';
 import axios, { AxiosError } from 'axios';
 import { useRouter } from 'next/router';
-import { z } from 'zod';
+import { SpotifyLoginData, SpotifyLoginDataSchema } from '../schemas';
 
 export interface GetSpotifyTokenMutation {
   code?: string;
   state?: string;
   codeVerifier?: string;
 }
-
-export const SpotifyLoginDataSchema = z.object({
-  accessToken: z.string(),
-  refreshToken: z.string(),
-  expireDate: z.number()
-});
-
-export type SpotifyLoginData = z.infer<typeof SpotifyLoginDataSchema>;
 
 const getSpotifyLoginData = async ({ code, state, codeVerifier }: GetSpotifyTokenMutation) => {
   if (!code || !state || !codeVerifier) throw new AxiosError('Missing code, state or codeVerifier');
