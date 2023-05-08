@@ -1,3 +1,3 @@
 export default function Library() {
-  return <main className="w-full h-full bg-red-300 flex items-center justify-center">Library</main>;
+  return <main className="p-2 relative w-full h-full flex items-center justify-center"></main>;
 }

@@ -2,6 +2,7 @@ import { clamp } from '@/shared/interpolate';
 import { useDrag } from '@use-gesture/react';
 import { motion, useSpring, useTransform } from 'framer-motion';
 import { useState } from 'react';
+import Background from './Background';
 import Controls from './Controls';
 import Library from './Library';
 import Playing from './Playing';
@@ -49,16 +50,18 @@ export default function MobileLayout() {
 
   return (
     <main className="w-screen h-screen flex flex-col overflow-hidden">
+      <Background />
+
       <motion.div
         className="w-full overflow-hidden"
-        style={{ height: useTransform(position, [0, 1], ['calc(0vh - 0vw)', 'calc(100vh - 25vw)']) }}
+        style={{ height: useTransform(position, [0, 1], ['calc(0vh - 0vw)', 'calc(100vh - 30vw)']) }}
       >
         <Library />
       </motion.div>
 
       <motion.div
         className="w-full overflow-hidden"
-        style={{ height: useTransform(position, [0, 1], ['100vw', '25vw']) }}
+        style={{ height: useTransform(position, [0, 1], ['100vw', '30vw']) }}
       >
         <Controls bindVerticalDrag={bindVerticalDrag} />
       </motion.div>
