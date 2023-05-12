@@ -1,66 +1,143 @@
 import { clamp } from '@/shared/interpolate';
 import { getBiggestImage } from '@/shared/spotify/helpers';
-import { usePlaybackState } from '@/shared/spotify/query/usePlaybackState';
 import { useQueue } from '@/shared/spotify/query/useQueue';
+import { Image as AlbumImage } from '@/shared/spotify/schemas';
 import { useDrag } from '@use-gesture/react';
 import { ReactDOMAttributes } from '@use-gesture/react/dist/declarations/src/types';
 import { motion, useMotionValue, useMotionValueEvent, useSpring, useTransform } from 'framer-motion';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface ControlsProps {
   bindVerticalDrag: (...args: any[]) => ReactDOMAttributes;
 }
 
-export default function Controls({ bindVerticalDrag }: ControlsProps) {
-  const { playbackState } = usePlaybackState();
-  const { queue } = useQueue();
-  const image = playbackState?.item?.album?.images ? getBiggestImage(playbackState?.item?.album?.images) : null;
+enum Position {
+  LEFT = 'LEFT',
+  CENTER = 'CENTER',
+  RIGHT = 'RIGHT'
+}
 
-  let animationPosition = useSpring(0, { bounce: 0 });
-  let firstPosition = useMotionValue(-1);
-  let secondPosition = useMotionValue(0);
-  let thirdPosition = useMotionValue(1);
-  const [currentIndex, setCurrentIndex] = useState(1);
+const positionValue: Record<Position, number> = {
+  [Position.LEFT]: -1,
+  [Position.CENTER]: 0,
+  [Position.RIGHT]: 1
+};
+
+interface Images {
+  first: AlbumImage | null;
+  second: AlbumImage | null;
+  third: AlbumImage | null;
+}
+
+export default function Controls({ bindVerticalDrag }: ControlsProps) {
+  const { queue } = useQueue();
+  const [images, setImages] = useState<Images>({
+    first: null,
+    second: queue ? getBiggestImage(queue.currently_playing.album.images) : null,
+    third: queue ? getBiggestImage(queue.queue[0].album.images) : null
+  });
+
+  useEffect(() => {
+    if (!queue) return;
+    setImages((prev) => ({
+      first: prev.first ? prev.first : null, // TODO get from previous song in the queue
+      second: prev.second ? prev.second : getBiggestImage(queue.currently_playing.album.images),
+      third: prev.third ? prev.third : getBiggestImage(queue.queue[0].album.images)
+    }));
+  }, [queue]);
+
+  let animationPosition = useSpring(positionValue[Position.CENTER], { bounce: 0 });
+  let firstPosition = useMotionValue(positionValue[Position.LEFT]);
+  let secondPosition = useMotionValue(positionValue[Position.CENTER]);
+  let thirdPosition = useMotionValue(positionValue[Position.RIGHT]);
+
+  const centerIndex = useRef(1);
+  const animating = useRef(false);
 
   const goNext = () => {
-    console.log('GO NEXT');
-    setCurrentIndex((currentIndex + 1) % 3);
+    centerIndex.current = centerIndex.current + 1 > 2 ? 0 : centerIndex.current + 1;
+    animating.current = true;
     animationPosition.set(-1);
   };
 
   const goCurr = () => {
-    console.log('GO CURR');
+    animating.current = false;
     animationPosition.set(0);
   };
 
   const goPrev = () => {
-    console.log('GO PREV');
-    setCurrentIndex((currentIndex - 1) % 3);
+    centerIndex.current = centerIndex.current - 1 < 0 ? 2 : centerIndex.current - 1;
+    animating.current = true;
     animationPosition.set(1);
   };
 
-  const onAnimationComplete = (positionValue: number) => {
-    console.log(positionValue);
+  const onAnimationComplete = () => {
+    animating.current = false;
+
+    switch (centerIndex.current) {
+      case 0:
+        firstPosition.jump(positionValue[Position.CENTER]);
+        secondPosition.jump(positionValue[Position.RIGHT]);
+        thirdPosition.jump(positionValue[Position.LEFT]);
+
+        // TODO change the one on the left for the previous song in the queue
+        setImages((prev) => ({
+          ...prev,
+          second: queue ? getBiggestImage(queue.queue[0].album.images) : null
+        }));
+        break;
+      case 1:
+        firstPosition.jump(positionValue[Position.LEFT]);
+        secondPosition.jump(positionValue[Position.CENTER]);
+        thirdPosition.jump(positionValue[Position.RIGHT]);
+
+        // TODO change the one on the left for the previous song in the queue
+        setImages((prev) => ({
+          ...prev,
+          third: queue ? getBiggestImage(queue.queue[0].album.images) : null
+        }));
+        break;
+      case 2:
+        firstPosition.jump(positionValue[Position.RIGHT]);
+        secondPosition.jump(positionValue[Position.LEFT]);
+        thirdPosition.jump(positionValue[Position.CENTER]);
+
+        // TODO change the one on the left for the previous song in the queue
+        setImages((prev) => ({
+          ...prev,
+          first: queue ? getBiggestImage(queue.queue[0].album.images) : null
+        }));
+        break;
+    }
 
     animationPosition.jump(0);
   };
 
   useMotionValueEvent(animationPosition, 'change', (value) => {
-    if (value === 0 || value === 1 || value === -1) onAnimationComplete(value);
+    if (!animating.current) return;
+    if (
+      value === positionValue[Position.LEFT] ||
+      value === positionValue[Position.CENTER] ||
+      value === positionValue[Position.RIGHT]
+    )
+      onAnimationComplete();
   });
 
   const bindHorizontalDrag = useDrag(
-    ({ canceled, last, offset: [xOffset], movement: [xMov], direction: [xDir], velocity: [xVel] }) => {
+    ({ cancel, canceled, last, offset: [xOffset], movement: [xMov], direction: [xDir], velocity: [xVel] }) => {
       if (canceled) return;
+      if (animating.current) return cancel();
+
       let yDispl = clamp(xOffset / window.innerWidth, -1, 1);
 
       if (last) {
-        if (xVel > 2) return xDir > 0 ? goPrev() : goNext();
-
-        if (yDispl > 0.75 || xVel < -2) goPrev();
-        else if (yDispl < -0.75 || xVel > 2) goNext();
+        if (xVel > 1) xDir > 0 ? goPrev() : goNext();
+        else if (yDispl > 0.25 || xVel < -2) goPrev();
+        else if (yDispl < -0.25 || xVel > 2) goNext();
         else goCurr();
+
+        if (yDispl === 0 || yDispl === 1 || yDispl === -1) return onAnimationComplete();
         return;
       }
 
@@ -69,9 +146,7 @@ export default function Controls({ bindVerticalDrag }: ControlsProps) {
     { axis: 'x', from: () => [animationPosition.get() * window.innerWidth, 0] }
   );
 
-  const x0 = useTransform(animationPosition, [-1, 1], ['-200vw', '0vw']);
-  const x1 = useTransform(animationPosition, [-1, 1], ['-100vw', '100vw']);
-  const x2 = useTransform(animationPosition, [-1, 1], ['0vw', '200vw']);
+  const x = useTransform(animationPosition, [-1, 1], ['-100vw', '100vw']);
 
   const firstPositionX = useTransform(firstPosition, [-1, 1], ['-100vw', '100vw']);
   const secondPositionX = useTransform(secondPosition, [-1, 1], ['-100vw', '100vw']);
@@ -80,12 +155,12 @@ export default function Controls({ bindVerticalDrag }: ControlsProps) {
   return (
     <main {...bindVerticalDrag()} className="p-2 relative w-full h-full flex items-center justify-center">
       <div {...bindHorizontalDrag()} className="relative w-full h-full flex items-center justify-center">
-        {image && (
+        {queue && (
           <>
             <motion.div style={{ x: firstPositionX }} className="absolute w-full h-full">
-              <motion.div style={{ x: x0 }} className="absolute w-full h-full">
+              <motion.div style={{ x }} className="absolute w-full h-full">
                 <Image
-                  src={'https://www.thisisdig.com/wp-content/uploads/2020/09/abbey_road.jpeg'}
+                  src={images.first?.url ?? 'https://www.thisisdig.com/wp-content/uploads/2020/09/abbey_road.jpeg'}
                   alt="Album cover"
                   priority
                   width={window.innerWidth}
@@ -96,11 +171,9 @@ export default function Controls({ bindVerticalDrag }: ControlsProps) {
             </motion.div>
 
             <motion.div style={{ x: secondPositionX }} className="absolute w-full h-full">
-              <motion.div style={{ x: x1 }} className="absolute w-full h-full">
+              <motion.div style={{ x }} className="absolute w-full h-full">
                 <Image
-                  src={
-                    'https://www.thisisdig.com/wp-content/uploads/2020/09/pink-floyd-dark-side-of-the-moon-dig-600x600.jpg'
-                  }
+                  src={images.second?.url ?? 'https://www.thisisdig.com/wp-content/uploads/2020/09/abbey_road.jpeg'}
                   alt="Album cover"
                   priority
                   width={window.innerWidth}
@@ -111,11 +184,9 @@ export default function Controls({ bindVerticalDrag }: ControlsProps) {
             </motion.div>
 
             <motion.div style={{ x: thirdPositionX }} className="absolute w-full h-full">
-              <motion.div style={{ x: x2 }} className="absolute w-full h-full">
+              <motion.div style={{ x }} className="absolute w-full h-full">
                 <Image
-                  src={
-                    'https://www.thisisdig.com/wp-content/uploads/2020/09/the-velvet-underground-nico-dig-600x600.jpg'
-                  }
+                  src={images.third?.url ?? 'https://www.thisisdig.com/wp-content/uploads/2020/09/abbey_road.jpeg'}
                   alt="Album cover"
                   priority
                   width={window.innerWidth}
