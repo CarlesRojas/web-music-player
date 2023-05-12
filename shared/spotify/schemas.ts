@@ -79,3 +79,10 @@ export const PlaybackStateSchema = z.object({
   context: z.object({ uri: z.string() }).optional()
 });
 export type PlaybackState = z.infer<typeof PlaybackStateSchema>;
+
+export const QueueSchema = z.object({
+  currently_playing: TrackSchema,
+  queue: z.array(TrackSchema)
+});
+export type Queue = z.infer<typeof QueueSchema>;
+// TODO add episodes to queue and playback state

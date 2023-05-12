@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { queryConfig } from '@/shared/queryConfig';
 import { DehydratedState, Hydrate, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { NextComponentType, NextPageContext } from 'next';
+import Head from 'next/head';
 import './globals.css';
 
 const montserrat = Montserrat({ subsets: ['latin'] });
@@ -27,13 +28,19 @@ const MyApp = ({ Component, pageProps }: MyAppProps) => {
   });
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <Hydrate state={pageProps.dehydratedState}>
-        <main id="__main" className={montserrat.className}>
-          <Component {...pageProps} />
-        </main>
-      </Hydrate>
-    </QueryClientProvider>
+    <>
+      <Head>
+        <meta name="viewport" content="initial-scale=1, width=device-width, shrink-to-fit=no, viewport-fit=cover" />
+      </Head>
+
+      <QueryClientProvider client={queryClient}>
+        <Hydrate state={pageProps.dehydratedState}>
+          <main id="__main" className={montserrat.className}>
+            <Component {...pageProps} />
+          </main>
+        </Hydrate>
+      </QueryClientProvider>
+    </>
   );
 };
 
