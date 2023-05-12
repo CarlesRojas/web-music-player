@@ -1,9 +1,9 @@
 import { getBiggestImage } from '@/shared/spotify/helpers';
-import { usePlaybackState } from '@/shared/spotify/query/usePlaybackState';
+import { useQueue } from '@/shared/spotify/query/useQueue';
 
 export default function Background() {
-  const { playbackState } = usePlaybackState();
-  const image = playbackState?.item?.album?.images ? getBiggestImage(playbackState?.item?.album?.images) : null;
+  const { queue } = useQueue();
+  const image = queue ? getBiggestImage(queue.currently_playing.album.images) : null;
 
   return (
     <div
