@@ -1,9 +1,10 @@
 import { env } from '@/env.mjs';
+import { SpotifyQueryId } from '@/shared/constants';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { axiosSpotifyConfig } from '../axiosSpotifyConfig';
 import { useSpotifyLoginData } from '../login/useSpotifyLoginData';
-import { UserProfileSchema } from '../schemas';
+import { UserProfile, UserProfileSchema } from '../schemas';
 
 const getUserProfile = async (accessToken?: string) => {
   if (!accessToken) throw new Error('No access token provided');
@@ -14,7 +15,7 @@ const getUserProfile = async (accessToken?: string) => {
     method: 'get'
   });
 
-  return UserProfileSchema.parse(response.data);
+  return UserProfileSchema.parse(response.data) as UserProfile;
 };
 
 export const useUserProfile = () => {
@@ -24,7 +25,7 @@ export const useUserProfile = () => {
     data: userProfile,
     isError: isErrorUserProfile,
     isLoading: isLodingUserProfile
-  } = useQuery(['userProfile'], () => getUserProfile(spotifyLoginData?.accessToken), {
+  } = useQuery([SpotifyQueryId.USER_PROFILE], () => getUserProfile(spotifyLoginData?.accessToken), {
     enabled: !!spotifyLoginData?.accessToken
   });
 

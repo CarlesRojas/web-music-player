@@ -1,9 +1,10 @@
 import { env } from '@/env.mjs';
+import { SpotifyQueryId } from '@/shared/constants';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { axiosSpotifyConfig } from '../axiosSpotifyConfig';
 import { useSpotifyLoginData } from '../login/useSpotifyLoginData';
-import { PlaybackStateSchema } from '../schemas';
+import { PlaybackState, PlaybackStateSchema } from '../schemas';
 
 const getPlaybackState = async (accessToken?: string) => {
   if (!accessToken) throw new Error('No access token provided');
@@ -14,7 +15,7 @@ const getPlaybackState = async (accessToken?: string) => {
     method: 'get'
   });
 
-  return PlaybackStateSchema.parse(response.data);
+  return PlaybackStateSchema.parse(response.data) as PlaybackState;
 };
 
 export const usePlaybackState = () => {
@@ -24,7 +25,7 @@ export const usePlaybackState = () => {
     data: playbackState,
     isError: isErrorPlaybackState,
     isLoading: isLodingPlaybackState
-  } = useQuery(['playbackState'], () => getPlaybackState(spotifyLoginData?.accessToken), {
+  } = useQuery([SpotifyQueryId.PLAYBACK_STATE], () => getPlaybackState(spotifyLoginData?.accessToken), {
     enabled: !!spotifyLoginData?.accessToken
   });
 

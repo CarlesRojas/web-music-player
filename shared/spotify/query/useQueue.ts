@@ -1,9 +1,10 @@
 import { env } from '@/env.mjs';
+import { SpotifyQueryId } from '@/shared/constants';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { axiosSpotifyConfig } from '../axiosSpotifyConfig';
 import { useSpotifyLoginData } from '../login/useSpotifyLoginData';
-import { QueueSchema } from '../schemas';
+import { Queue, QueueSchema } from '../schemas';
 
 const getQueue = async (accessToken?: string) => {
   if (!accessToken) throw new Error('No access token provided');
@@ -14,7 +15,7 @@ const getQueue = async (accessToken?: string) => {
     method: 'get'
   });
 
-  return QueueSchema.parse(response.data);
+  return QueueSchema.parse(response.data) as Queue;
 };
 
 export const useQueue = () => {
@@ -24,7 +25,7 @@ export const useQueue = () => {
     data: queue,
     isError: isErrorQueue,
     isLoading: isLodingQueue
-  } = useQuery(['queue'], () => getQueue(spotifyLoginData?.accessToken), {
+  } = useQuery([SpotifyQueryId.QUEUE], () => getQueue(spotifyLoginData?.accessToken), {
     enabled: !!spotifyLoginData?.accessToken
   });
 

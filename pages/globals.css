@@ -32,3 +32,9 @@ svg {
 a {
   text-decoration: none;
 }
+
+@layer utilities {
+  .pause {
+    animation-play-state: paused;
+  }
+}

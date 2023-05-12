@@ -1,5 +1,10 @@
 import { clamp } from '@/shared/interpolate';
 import { getBiggestImage } from '@/shared/spotify/helpers';
+import { usePause } from '@/shared/spotify/mutation/usePause';
+import { usePlay } from '@/shared/spotify/mutation/usePlay';
+import { useSkipToNext } from '@/shared/spotify/mutation/useSkipToNext';
+import { useSkipToPrevious } from '@/shared/spotify/mutation/useSkipToPrevious';
+import { usePlaybackState } from '@/shared/spotify/query/usePlaybackState';
 import { useQueue } from '@/shared/spotify/query/useQueue';
 import { Image as AlbumImage } from '@/shared/spotify/schemas';
 import { useDrag } from '@use-gesture/react';
@@ -32,20 +37,18 @@ interface Images {
 
 export default function Controls({ bindVerticalDrag }: ControlsProps) {
   const { queue } = useQueue();
+  const { playbackState } = usePlaybackState();
+
+  const { skipToNext } = useSkipToNext();
+  const { skipToPrevious } = useSkipToPrevious();
+  const { pause } = usePause();
+  const { play } = usePlay();
+
   const [images, setImages] = useState<Images>({
     first: null,
     second: queue ? getBiggestImage(queue.currently_playing.album.images) : null,
     third: queue ? getBiggestImage(queue.queue[0].album.images) : null
   });
-
-  useEffect(() => {
-    if (!queue) return;
-    setImages((prev) => ({
-      first: prev.first ? prev.first : null, // TODO get from previous song in the queue
-      second: prev.second ? prev.second : getBiggestImage(queue.currently_playing.album.images),
-      third: prev.third ? prev.third : getBiggestImage(queue.queue[0].album.images)
-    }));
-  }, [queue]);
 
   let animationPosition = useSpring(positionValue[Position.CENTER], { bounce: 0 });
   let firstPosition = useMotionValue(positionValue[Position.LEFT]);
@@ -55,7 +58,53 @@ export default function Controls({ bindVerticalDrag }: ControlsProps) {
   const centerIndex = useRef(1);
   const animating = useRef(false);
 
+  useEffect(() => {
+    if (!queue) return;
+    setImages((prev) => ({
+      first: prev.first ? prev.first : null, // TODO get from previous song in the queue
+      second: prev.second ? prev.second : getBiggestImage(queue.currently_playing.album.images),
+      third: prev.third ? prev.third : getBiggestImage(queue.queue[0].album.images)
+    }));
+
+    switch (centerIndex.current) {
+      case 0:
+        console.log('0');
+        setImages((prev) => ({
+          ...prev,
+          first: getBiggestImage(queue.currently_playing.album.images),
+          second: queue ? getBiggestImage(queue.queue[0].album.images) : null,
+          third: null // TODO get from previous song in the queue
+        }));
+        break;
+      case 1:
+        console.log('1');
+        setImages((prev) => ({
+          ...prev,
+          first: null, // TODO get from previous song in the queue
+          second: getBiggestImage(queue.currently_playing.album.images),
+          third: queue ? getBiggestImage(queue.queue[0].album.images) : null
+        }));
+        break;
+      case 2:
+        console.log('2');
+        setImages((prev) => ({
+          ...prev,
+          first: queue ? getBiggestImage(queue.queue[0].album.images) : null,
+          second: null, // TODO get from previous song in the queue
+          third: getBiggestImage(queue.currently_playing.album.images)
+        }));
+        break;
+    }
+  }, [queue]);
+
+  const onCoverClick = () => {
+    if (!playbackState) return;
+    if (playbackState.is_playing) pause();
+    else play();
+  };
+
   const goNext = () => {
+    skipToNext();
     centerIndex.current = centerIndex.current + 1 > 2 ? 0 : centerIndex.current + 1;
     animating.current = true;
     animationPosition.set(-1);
@@ -67,6 +116,7 @@ export default function Controls({ bindVerticalDrag }: ControlsProps) {
   };
 
   const goPrev = () => {
+    skipToPrevious();
     centerIndex.current = centerIndex.current - 1 < 0 ? 2 : centerIndex.current - 1;
     animating.current = true;
     animationPosition.set(1);
@@ -80,34 +130,16 @@ export default function Controls({ bindVerticalDrag }: ControlsProps) {
         firstPosition.jump(positionValue[Position.CENTER]);
         secondPosition.jump(positionValue[Position.RIGHT]);
         thirdPosition.jump(positionValue[Position.LEFT]);
-
-        // TODO change the one on the left for the previous song in the queue
-        setImages((prev) => ({
-          ...prev,
-          second: queue ? getBiggestImage(queue.queue[0].album.images) : null
-        }));
         break;
       case 1:
         firstPosition.jump(positionValue[Position.LEFT]);
         secondPosition.jump(positionValue[Position.CENTER]);
         thirdPosition.jump(positionValue[Position.RIGHT]);
-
-        // TODO change the one on the left for the previous song in the queue
-        setImages((prev) => ({
-          ...prev,
-          third: queue ? getBiggestImage(queue.queue[0].album.images) : null
-        }));
         break;
       case 2:
         firstPosition.jump(positionValue[Position.RIGHT]);
         secondPosition.jump(positionValue[Position.LEFT]);
         thirdPosition.jump(positionValue[Position.CENTER]);
-
-        // TODO change the one on the left for the previous song in the queue
-        setImages((prev) => ({
-          ...prev,
-          first: queue ? getBiggestImage(queue.queue[0].album.images) : null
-        }));
         break;
     }
 
@@ -152,50 +184,58 @@ export default function Controls({ bindVerticalDrag }: ControlsProps) {
   const secondPositionX = useTransform(secondPosition, [-1, 1], ['-100vw', '100vw']);
   const thirdPositionX = useTransform(thirdPosition, [-1, 1], ['-100vw', '100vw']);
 
+  const playingClass = playbackState?.is_playing ? '' : 'grayscale pause';
+
   return (
     <main {...bindVerticalDrag()} className="p-2 relative w-full h-full flex items-center justify-center">
       <div {...bindHorizontalDrag()} className="relative w-full h-full flex items-center justify-center">
         {queue && (
-          <>
+          <div className="relative w-full h-full flex items-center justify-center" onClick={onCoverClick}>
             <motion.div style={{ x: firstPositionX }} className="absolute w-full h-full">
               <motion.div style={{ x }} className="absolute w-full h-full">
-                <Image
-                  src={images.first?.url ?? 'https://www.thisisdig.com/wp-content/uploads/2020/09/abbey_road.jpeg'}
-                  alt="Album cover"
-                  priority
-                  width={window.innerWidth}
-                  height={window.innerWidth}
-                  className="h-full w-full object-cover animate-image rounded-md pointer-events-none select-none"
-                />
+                {images.first?.url && (
+                  <Image
+                    src={images.first.url}
+                    alt="Album cover"
+                    priority
+                    width={window.innerWidth}
+                    height={window.innerWidth}
+                    className={`h-full w-full object-cover animate-image rounded-md pointer-events-none select-none ${playingClass}`}
+                  />
+                )}
               </motion.div>
             </motion.div>
 
             <motion.div style={{ x: secondPositionX }} className="absolute w-full h-full">
               <motion.div style={{ x }} className="absolute w-full h-full">
-                <Image
-                  src={images.second?.url ?? 'https://www.thisisdig.com/wp-content/uploads/2020/09/abbey_road.jpeg'}
-                  alt="Album cover"
-                  priority
-                  width={window.innerWidth}
-                  height={window.innerWidth}
-                  className="h-full w-full object-cover animate-image rounded-md pointer-events-none select-none"
-                />
+                {images.second?.url && (
+                  <Image
+                    src={images.second.url}
+                    alt="Album cover"
+                    priority
+                    width={window.innerWidth}
+                    height={window.innerWidth}
+                    className={`h-full w-full object-cover animate-image rounded-md pointer-events-none select-none ${playingClass}`}
+                  />
+                )}
               </motion.div>
             </motion.div>
 
             <motion.div style={{ x: thirdPositionX }} className="absolute w-full h-full">
               <motion.div style={{ x }} className="absolute w-full h-full">
-                <Image
-                  src={images.third?.url ?? 'https://www.thisisdig.com/wp-content/uploads/2020/09/abbey_road.jpeg'}
-                  alt="Album cover"
-                  priority
-                  width={window.innerWidth}
-                  height={window.innerWidth}
-                  className="h-full w-full object-cover animate-image rounded-md pointer-events-none select-none"
-                />
+                {images.third?.url && (
+                  <Image
+                    src={images.third.url}
+                    alt="Album cover"
+                    priority
+                    width={window.innerWidth}
+                    height={window.innerWidth}
+                    className={`h-full w-full object-cover animate-image rounded-md pointer-events-none select-none ${playingClass}`}
+                  />
+                )}
               </motion.div>
             </motion.div>
-          </>
+          </div>
         )}
       </div>
     </main>

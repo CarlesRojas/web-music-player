@@ -10,3 +10,10 @@ export enum Route {
   PLAYER = '/player',
   LOGIN = '/login'
 }
+
+export enum SpotifyQueryId {
+  QUEUE = 'QUEUE',
+  PLAYBACK_STATE = 'PLAYBACK_STATE',
+  PLAYER = 'PLAYER',
+  USER_PROFILE = 'USER_PROFILE'
+}

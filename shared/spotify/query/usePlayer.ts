@@ -1,3 +1,4 @@
+import { SpotifyQueryId } from '@/shared/constants';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
 import SpotifyPlayer from 'spotify-web-playback';
@@ -43,7 +44,7 @@ export const usePlayer = () => {
     data: player,
     isError: isErrorPlayer,
     isLoading: isLodingPlayer
-  } = useQuery(['usePlayer'], () => getPlayer(spotifyLoginData?.accessToken), {
+  } = useQuery([SpotifyQueryId.PLAYER], () => getPlayer(spotifyLoginData?.accessToken), {
     enabled: !!spotifyLoginData?.accessToken && interacted
   });
 
