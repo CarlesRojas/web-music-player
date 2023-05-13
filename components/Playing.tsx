@@ -20,7 +20,7 @@ export default function Playing() {
   );
 
   const averageColor = useAverageColor(playbackState ? getBiggestImage(playbackState.item.album.images) : null);
-  const progressMs = useAdvancingTime(playbackState?.progress_ms ?? null);
+  const progressMs = useAdvancingTime(playbackState?.progress_ms ?? null, !playbackState?.is_playing ?? true);
 
   if (!playbackState) return container();
 
