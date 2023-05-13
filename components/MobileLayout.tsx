@@ -37,7 +37,7 @@ export default function MobileLayout() {
         return;
       }
 
-      if (Math.abs(yMov) > window.innerHeight / 2 || yVel > 2) {
+      if (Math.abs(yMov) > window.innerHeight / 2 || yVel > 3) {
         yDir < 0 ? openPlaying() : openLibrary();
         cancel();
         return;
@@ -54,7 +54,10 @@ export default function MobileLayout() {
 
       <motion.div
         className="w-full overflow-hidden"
-        style={{ height: useTransform(position, [0, 1], ['calc(0vh - 0vw)', 'calc(100vh - 30vw)']) }}
+        style={{
+          height: useTransform(position, [0, 1], ['calc(0vh - 0vw)', 'calc(100vh - 30vw)']),
+          opacity: useTransform(position, [0.5, 1], [0, 1])
+        }}
       >
         <Library />
       </motion.div>
@@ -68,7 +71,10 @@ export default function MobileLayout() {
 
       <motion.div
         className="w-full overflow-hidden"
-        style={{ height: useTransform(position, [0, 1], ['calc(100vh - 100vw)', 'calc(0vh - 0vw)']) }}
+        style={{
+          height: useTransform(position, [0, 1], ['calc(100vh - 100vw)', 'calc(0vh - 0vw)']),
+          opacity: useTransform(position, [0, 0.5], [1, 0])
+        }}
       >
         <Playing />
       </motion.div>
