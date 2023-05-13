@@ -13,6 +13,7 @@ specifiers:
   classnames: ^2.3.2
   eslint: 8.40.0
   eslint-config-next: 13.4.1
+  fast-average-color: ^9.3.0
   framer-motion: ^10.12.8
   lodash: ^4.17.21
   next: 13.4.1
@@ -38,6 +39,7 @@ dependencies:
   classnames: 2.3.2
   eslint: 8.40.0
   eslint-config-next: 13.4.1_3qfatcekpgbllh6uk5ivyhkbxq
+  fast-average-color: 9.3.0
   framer-motion: 10.12.8_biqbaboplfbrettd7655fr4n2y
   lodash: 4.17.21
   next: 13.4.1_biqbaboplfbrettd7655fr4n2y
@@ -1302,6 +1304,11 @@ packages:
       onetime: 6.0.0
       signal-exit: 3.0.7
       strip-final-newline: 3.0.0
+    dev: false
+
+  /fast-average-color/9.3.0:
+    resolution: {integrity: sha512-FlPROSqDMOnoBgkFhWMHJODPvpS0Od0WDpedcKq4U/t0JVapGAkblNwxOr75qT+ZNd0dQM4qlgqrtnXbCJ8cNg==}
+    engines: {node: '>= 12'}
     dev: false
 
   /fast-deep-equal/3.1.3:
