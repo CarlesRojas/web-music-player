@@ -21,6 +21,7 @@
     "classnames": "^2.3.2",
     "eslint": "8.40.0",
     "eslint-config-next": "13.4.1",
+    "fast-average-color": "^9.3.0",
     "framer-motion": "^10.12.8",
     "lodash": "^4.17.21",
     "next": "13.4.1",
