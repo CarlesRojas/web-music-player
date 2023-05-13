@@ -19,9 +19,6 @@ const getPlaybackState = async (accessToken?: string) => {
   const playback = PlaybackStateSchema.parse(response.data) as PlaybackState;
 
   const previousSong = localStorage.getItem(LocalStorageKey.CURRENT_SONG);
-  console.log(previousSong);
-  console.log(playback.item.id);
-  console.log('');
   if (previousSong !== playback.item.id) {
     playback.changed = true;
     localStorage.setItem(LocalStorageKey.CURRENT_SONG, playback.item.id);
