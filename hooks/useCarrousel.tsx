@@ -11,6 +11,12 @@ enum Position {
   RIGHT = 'RIGHT'
 }
 
+export enum CarrouselAction {
+  PREV = 'PREV',
+  STAY = 'STAY',
+  NEXT = 'NEXT'
+}
+
 const positionValue: Record<Position, number> = {
   [Position.LEFT]: -1,
   [Position.CENTER]: 0,
@@ -38,25 +44,29 @@ export default function useCarrousel({ images, onClick, onSwipePrev, onSwipeNext
   let thirdPosition = useMotionValue(positionValue[Position.RIGHT]);
 
   const centerIndex = useRef(1);
+  const lastAction = useRef(CarrouselAction.STAY);
   const animating = useRef(false);
 
   const goNext = () => {
-    onSwipeNext && onSwipeNext();
     centerIndex.current = centerIndex.current + 1 > 2 ? 0 : centerIndex.current + 1;
     animating.current = true;
+    lastAction.current = CarrouselAction.NEXT;
     animationPosition.set(-1);
+    onSwipeNext && onSwipeNext();
   };
 
   const goCurr = () => {
     animating.current = false;
+    lastAction.current = CarrouselAction.STAY;
     animationPosition.set(0);
   };
 
   const goPrev = () => {
-    onSwipePrev && onSwipePrev();
     centerIndex.current = centerIndex.current - 1 < 0 ? 2 : centerIndex.current - 1;
     animating.current = true;
+    lastAction.current = CarrouselAction.PREV;
     animationPosition.set(1);
+    onSwipePrev && onSwipePrev();
   };
 
   const onAnimationComplete = () => {
@@ -123,6 +133,7 @@ export default function useCarrousel({ images, onClick, onSwipePrev, onSwipeNext
 
   return {
     centerIndex,
+    lastAction,
     carrousel: (
       <div {...bindHorizontalDrag()} className="relative w-full h-full flex items-center justify-center">
         <div className="relative w-full h-full flex items-center justify-center" onClick={onClick}>

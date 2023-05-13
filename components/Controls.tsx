@@ -1,4 +1,4 @@
-import useCarrousel from '@/hooks/useCarrousel';
+import useCarrousel, { CarrouselAction } from '@/hooks/useCarrousel';
 import { EmptyImage } from '@/shared/constants';
 import { getBiggestImage } from '@/shared/spotify/helpers';
 import { usePause } from '@/shared/spotify/mutation/usePause';
@@ -38,7 +38,7 @@ export default function Controls({ bindVerticalDrag }: ControlsProps) {
 
   const [images, setImages] = useState<Images>({ first: null, second: null, third: null });
 
-  const { carrousel, centerIndex } = useCarrousel({
+  const { carrousel, centerIndex, lastAction } = useCarrousel({
     images,
     animateImages: playbackState?.is_playing,
     onClick: onCoverClick,
@@ -48,20 +48,17 @@ export default function Controls({ bindVerticalDrag }: ControlsProps) {
 
   useEffect(() => {
     if (!queue) return;
-
     switch (centerIndex.current) {
       case 0:
         setImages((prev) => ({
-          ...prev,
           first: queue.currently_playing ? getBiggestImage(queue.currently_playing.album.images) : EmptyImage.ALBUM,
           second: queue && queue.queue.length > 0 ? getBiggestImage(queue.queue[0].album.images) : EmptyImage.ALBUM,
-          third: null // TODO get from previous song in the queue
+          third: lastAction.current === CarrouselAction.PREV ? null : prev.third
         }));
         break;
       case 1:
         setImages((prev) => ({
-          ...prev,
-          first: null, // TODO get from previous song in the queue
+          first: lastAction.current === CarrouselAction.PREV ? null : prev.first,
           second: queue.currently_playing ? getBiggestImage(queue.currently_playing.album.images) : EmptyImage.ALBUM,
           third: queue && queue.queue.length > 0 ? getBiggestImage(queue.queue[0].album.images) : EmptyImage.ALBUM
         }));
@@ -70,12 +67,12 @@ export default function Controls({ bindVerticalDrag }: ControlsProps) {
         setImages((prev) => ({
           ...prev,
           first: queue && queue.queue.length > 0 ? getBiggestImage(queue.queue[0].album.images) : EmptyImage.ALBUM,
-          second: null, // TODO get from previous song in the queue
+          second: lastAction.current === CarrouselAction.PREV ? null : prev.second,
           third: queue.currently_playing ? getBiggestImage(queue.currently_playing.album.images) : EmptyImage.ALBUM
         }));
         break;
     }
-  }, [centerIndex, queue]);
+  }, [centerIndex, lastAction, queue]);
 
   return (
     <main {...bindVerticalDrag()} className="p-2 relative w-full h-full flex items-center justify-center">
