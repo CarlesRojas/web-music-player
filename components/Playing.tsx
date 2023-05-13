@@ -42,7 +42,7 @@ export default function Playing() {
           style={{ width: `${progressPercentage}%` }}
         >
           <div
-            className="absolute top-0 left-0 w-full h-full bg-white rounded-md"
+            className="absolute top-0 left-0 w-full h-full bg-white"
             style={{ backgroundColor: averageColor?.hex }}
           />
           <p className="text-xs opacity-60" style={{ color: averageColor?.isDark ? 'white' : 'black' }}>
