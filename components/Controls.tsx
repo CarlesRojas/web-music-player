@@ -24,6 +24,12 @@ enum Position {
   RIGHT = 'RIGHT'
 }
 
+export enum CarrouselAction {
+  PREV = 'PREV',
+  STAY = 'STAY',
+  NEXT = 'NEXT'
+}
+
 const positionValue: Record<Position, number> = {
   [Position.LEFT]: -1,
   [Position.CENTER]: 0,
@@ -57,6 +63,7 @@ export default function Controls({ bindVerticalDrag }: ControlsProps) {
   let thirdPosition = useMotionValue(positionValue[Position.RIGHT]);
 
   const centerIndex = useRef(1);
+  const lastAction = useRef(CarrouselAction.STAY);
   const animating = useRef(false);
 
   useEffect(() => {
@@ -68,13 +75,13 @@ export default function Controls({ bindVerticalDrag }: ControlsProps) {
           ...prev,
           first: queue.currently_playing ? getBiggestImage(queue.currently_playing.album.images) : EmptyImage.ALBUM,
           second: queue && queue.queue.length > 0 ? getBiggestImage(queue.queue[0].album.images) : EmptyImage.ALBUM,
-          third: null // TODO get from previous song in the queue
+          third: lastAction.current === CarrouselAction.PREV ? null : prev.third
         }));
         break;
       case 1:
         setImages((prev) => ({
           ...prev,
-          first: null, // TODO get from previous song in the queue
+          first: lastAction.current === CarrouselAction.PREV ? null : prev.first,
           second: queue.currently_playing ? getBiggestImage(queue.currently_playing.album.images) : EmptyImage.ALBUM,
           third: queue && queue.queue.length > 0 ? getBiggestImage(queue.queue[0].album.images) : EmptyImage.ALBUM
         }));
@@ -83,7 +90,7 @@ export default function Controls({ bindVerticalDrag }: ControlsProps) {
         setImages((prev) => ({
           ...prev,
           first: queue && queue.queue.length > 0 ? getBiggestImage(queue.queue[0].album.images) : EmptyImage.ALBUM,
-          second: null, // TODO get from previous song in the queue
+          second: lastAction.current === CarrouselAction.PREV ? null : prev.second,
           third: queue.currently_playing ? getBiggestImage(queue.currently_playing.album.images) : EmptyImage.ALBUM
         }));
         break;
@@ -97,22 +104,25 @@ export default function Controls({ bindVerticalDrag }: ControlsProps) {
   };
 
   const goNext = () => {
-    skipToNext();
     centerIndex.current = centerIndex.current + 1 > 2 ? 0 : centerIndex.current + 1;
+    lastAction.current = CarrouselAction.NEXT;
     animating.current = true;
     animationPosition.set(-1);
+    skipToNext();
   };
 
   const goCurr = () => {
     animating.current = false;
+    lastAction.current = CarrouselAction.STAY;
     animationPosition.set(0);
   };
 
   const goPrev = () => {
-    skipToPrevious();
     centerIndex.current = centerIndex.current - 1 < 0 ? 2 : centerIndex.current - 1;
     animating.current = true;
+    lastAction.current = CarrouselAction.PREV;
     animationPosition.set(1);
+    skipToPrevious();
   };
 
   const onAnimationComplete = () => {
