@@ -3,7 +3,7 @@ import { useQueue } from '@/shared/spotify/query/useQueue';
 
 export default function Background() {
   const { queue } = useQueue();
-  const image = queue ? getBiggestImage(queue.currently_playing.album.images) : null;
+  const image = queue?.currently_playing ? getBiggestImage(queue.currently_playing.album.images) : null;
 
   return (
     <div

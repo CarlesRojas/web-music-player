@@ -1,3 +1,4 @@
+import { EmptyImage } from '@/shared/constants';
 import { clamp } from '@/shared/interpolate';
 import { getBiggestImage } from '@/shared/spotify/helpers';
 import { usePause } from '@/shared/spotify/mutation/usePause';
@@ -46,8 +47,8 @@ export default function Controls({ bindVerticalDrag }: ControlsProps) {
 
   const [images, setImages] = useState<Images>({
     first: null,
-    second: queue ? getBiggestImage(queue.currently_playing.album.images) : null,
-    third: queue ? getBiggestImage(queue.queue[0].album.images) : null
+    second: null,
+    third: null
   });
 
   let animationPosition = useSpring(positionValue[Position.CENTER], { bounce: 0 });
@@ -60,38 +61,30 @@ export default function Controls({ bindVerticalDrag }: ControlsProps) {
 
   useEffect(() => {
     if (!queue) return;
-    setImages((prev) => ({
-      first: prev.first ? prev.first : null, // TODO get from previous song in the queue
-      second: prev.second ? prev.second : getBiggestImage(queue.currently_playing.album.images),
-      third: prev.third ? prev.third : getBiggestImage(queue.queue[0].album.images)
-    }));
 
     switch (centerIndex.current) {
       case 0:
-        console.log('0');
         setImages((prev) => ({
           ...prev,
-          first: getBiggestImage(queue.currently_playing.album.images),
-          second: queue ? getBiggestImage(queue.queue[0].album.images) : null,
+          first: queue.currently_playing ? getBiggestImage(queue.currently_playing.album.images) : EmptyImage.ALBUM,
+          second: queue && queue.queue.length > 0 ? getBiggestImage(queue.queue[0].album.images) : EmptyImage.ALBUM,
           third: null // TODO get from previous song in the queue
         }));
         break;
       case 1:
-        console.log('1');
         setImages((prev) => ({
           ...prev,
           first: null, // TODO get from previous song in the queue
-          second: getBiggestImage(queue.currently_playing.album.images),
-          third: queue ? getBiggestImage(queue.queue[0].album.images) : null
+          second: queue.currently_playing ? getBiggestImage(queue.currently_playing.album.images) : EmptyImage.ALBUM,
+          third: queue && queue.queue.length > 0 ? getBiggestImage(queue.queue[0].album.images) : EmptyImage.ALBUM
         }));
         break;
       case 2:
-        console.log('2');
         setImages((prev) => ({
           ...prev,
-          first: queue ? getBiggestImage(queue.queue[0].album.images) : null,
+          first: queue && queue.queue.length > 0 ? getBiggestImage(queue.queue[0].album.images) : EmptyImage.ALBUM,
           second: null, // TODO get from previous song in the queue
-          third: getBiggestImage(queue.currently_playing.album.images)
+          third: queue.currently_playing ? getBiggestImage(queue.currently_playing.album.images) : EmptyImage.ALBUM
         }));
         break;
     }
@@ -184,8 +177,6 @@ export default function Controls({ bindVerticalDrag }: ControlsProps) {
   const secondPositionX = useTransform(secondPosition, [-1, 1], ['-100vw', '100vw']);
   const thirdPositionX = useTransform(thirdPosition, [-1, 1], ['-100vw', '100vw']);
 
-  const playingClass = playbackState?.is_playing ? '' : 'grayscale pause';
-
   return (
     <main {...bindVerticalDrag()} className="p-2 relative w-full h-full flex items-center justify-center">
       <div {...bindHorizontalDrag()} className="relative w-full h-full flex items-center justify-center">
@@ -200,7 +191,9 @@ export default function Controls({ bindVerticalDrag }: ControlsProps) {
                     priority
                     width={window.innerWidth}
                     height={window.innerWidth}
-                    className={`h-full w-full object-cover animate-image rounded-md pointer-events-none select-none ${playingClass}`}
+                    className={`h-full w-full object-cover rounded-md pointer-events-none select-none ${
+                      images.first.missing ? '' : playbackState?.is_playing ? 'animate-image' : 'grayscale pause'
+                    }`}
                   />
                 )}
               </motion.div>
@@ -215,7 +208,9 @@ export default function Controls({ bindVerticalDrag }: ControlsProps) {
                     priority
                     width={window.innerWidth}
                     height={window.innerWidth}
-                    className={`h-full w-full object-cover animate-image rounded-md pointer-events-none select-none ${playingClass}`}
+                    className={`h-full w-full object-cover rounded-md pointer-events-none select-none ${
+                      images.second.missing ? '' : playbackState?.is_playing ? 'animate-image' : 'grayscale pause'
+                    }`}
                   />
                 )}
               </motion.div>
@@ -230,7 +225,9 @@ export default function Controls({ bindVerticalDrag }: ControlsProps) {
                     priority
                     width={window.innerWidth}
                     height={window.innerWidth}
-                    className={`h-full w-full object-cover animate-image rounded-md pointer-events-none select-none ${playingClass}`}
+                    className={`h-full w-full object-cover rounded-md pointer-events-none select-none ${
+                      images.third.missing ? '' : playbackState?.is_playing ? 'animate-image' : 'grayscale pause'
+                    }`}
                   />
                 )}
               </motion.div>

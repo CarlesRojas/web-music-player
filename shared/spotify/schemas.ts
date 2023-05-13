@@ -10,7 +10,8 @@ export type SpotifyLoginData = z.infer<typeof SpotifyLoginDataSchema>;
 export const Image = z.object({
   height: z.number().int().nullable(),
   url: z.string().url(),
-  width: z.number().int().nullable()
+  width: z.number().int().nullable(),
+  missing: z.boolean().optional()
 });
 export type Image = z.infer<typeof Image>;
 
@@ -76,12 +77,13 @@ export const PlaybackStateSchema = z.object({
   is_playing: z.boolean(),
   currently_playing_type: z.enum(['track', 'episode', 'ad', 'unknown']),
   item: TrackSchema,
-  context: z.object({ uri: z.string() }).optional()
+  context: z.object({ uri: z.string() }).optional(),
+  changed: z.boolean().default(false)
 });
 export type PlaybackState = z.infer<typeof PlaybackStateSchema>;
 
 export const QueueSchema = z.object({
-  currently_playing: TrackSchema,
+  currently_playing: TrackSchema.nullable(),
   queue: z.array(TrackSchema)
 });
 export type Queue = z.infer<typeof QueueSchema>;

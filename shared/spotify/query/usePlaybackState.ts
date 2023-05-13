@@ -1,6 +1,6 @@
 import { env } from '@/env.mjs';
-import { SpotifyQueryId } from '@/shared/constants';
-import { useQuery } from '@tanstack/react-query';
+import { LocalStorageKey, SpotifyQueryId } from '@/shared/constants';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { axiosSpotifyConfig } from '../axiosSpotifyConfig';
 import { useSpotifyLoginData } from '../login/useSpotifyLoginData';
@@ -15,10 +15,23 @@ const getPlaybackState = async (accessToken?: string) => {
     method: 'get'
   });
 
-  return PlaybackStateSchema.parse(response.data) as PlaybackState;
+  if (typeof response.data !== 'object') return null;
+  const playback = PlaybackStateSchema.parse(response.data) as PlaybackState;
+
+  const previousSong = localStorage.getItem(LocalStorageKey.CURRENT_SONG);
+  console.log(previousSong);
+  console.log(playback.item.id);
+  console.log('');
+  if (previousSong !== playback.item.id) {
+    playback.changed = true;
+    localStorage.setItem(LocalStorageKey.CURRENT_SONG, playback.item.id);
+  }
+
+  return playback;
 };
 
 export const usePlaybackState = () => {
+  const queryClient = useQueryClient();
   const { spotifyLoginData } = useSpotifyLoginData();
 
   const {
@@ -26,7 +39,11 @@ export const usePlaybackState = () => {
     isError: isErrorPlaybackState,
     isLoading: isLodingPlaybackState
   } = useQuery([SpotifyQueryId.PLAYBACK_STATE], () => getPlaybackState(spotifyLoginData?.accessToken), {
-    enabled: !!spotifyLoginData?.accessToken
+    enabled: !!spotifyLoginData?.accessToken,
+    refetchInterval: 5_000,
+    onSettled: (data) => {
+      if (data?.changed) queryClient.invalidateQueries({ queryKey: [SpotifyQueryId.QUEUE] });
+    }
   });
 
   return { playbackState, isErrorPlaybackState, isLodingPlaybackState };
