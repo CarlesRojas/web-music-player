@@ -37,7 +37,7 @@ export default function MobileLayout() {
         return;
       }
 
-      if (Math.abs(yMov) > window.innerHeight / 2 || yVel > 3) {
+      if (Math.abs(yMov) > window.innerHeight / 2 || yVel > 2) {
         yDir < 0 ? openPlaying() : openLibrary();
         cancel();
         return;
