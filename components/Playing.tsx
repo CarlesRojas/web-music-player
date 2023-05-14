@@ -1,15 +1,24 @@
 import useAdvancingTime from '@/hooks/useAdvancingTime';
 import useAverageColor from '@/hooks/useAverageColor';
 import { getBiggestImage, millisecondsToDuration, prettifyName } from '@/shared/spotify/helpers';
+import { getNextRepeatMode, useSetRepeatMode } from '@/shared/spotify/mutation/useSetRepeatMode';
 import { useToggleShuffle } from '@/shared/spotify/mutation/useToggleShuffle';
 import { usePlaybackState } from '@/shared/spotify/query/usePlaybackState';
 import { ReactNode } from 'react';
-import { RiComputerLine, RiMicLine, RiPlayListLine, RiRepeatLine, RiShuffleLine } from 'react-icons/ri';
+import {
+  RiComputerLine,
+  RiMicLine,
+  RiPlayListLine,
+  RiRepeat2Line,
+  RiRepeatOneFill,
+  RiShuffleLine
+} from 'react-icons/ri';
 
 export default function Playing() {
   const { playbackState } = usePlaybackState();
 
   const { toggleShuffle } = useToggleShuffle();
+  const { setRepeatMode } = useSetRepeatMode();
 
   const container = (children?: ReactNode) => (
     <main className="p-2 relative w-full h-full flex flex-col items-center justify-center">
@@ -26,7 +35,7 @@ export default function Playing() {
   const progressMs = useAdvancingTime(playbackState?.progress_ms ?? null, !playbackState?.is_playing ?? true);
 
   if (!playbackState) return container();
-  const { item, shuffle_state } = playbackState;
+  const { item, shuffle_state, repeat_state } = playbackState;
   const { name, artists, duration_ms } = item;
 
   const activeButtonClass = 'text-green-500';
@@ -67,9 +76,20 @@ export default function Playing() {
 
         <RiShuffleLine
           className={`h-12 min-h-[3rem] w-12 min-w-[3rem] p-3 ${shuffle_state ? activeButtonClass : ''}`}
-          onClick={() => toggleShuffle()}
+          onClick={() => toggleShuffle(!shuffle_state)}
         />
-        <RiRepeatLine className={`h-12 min-h-[3rem] w-12 min-w-[3rem] p-3`} />
+
+        {repeat_state == 'track' ? (
+          <RiRepeatOneFill
+            className={`h-12 min-h-[3rem] w-12 min-w-[3rem] p-3 ${activeButtonClass}`}
+            onClick={() => setRepeatMode(getNextRepeatMode(repeat_state))}
+          />
+        ) : (
+          <RiRepeat2Line
+            className={`h-12 min-h-[3rem] w-12 min-w-[3rem] p-3 ${repeat_state !== 'off' ? activeButtonClass : ''}`}
+            onClick={() => setRepeatMode(getNextRepeatMode(repeat_state))}
+          />
+        )}
       </div>
 
       <div className="relative w-full grow flex flex-col items-center justify-center" />
