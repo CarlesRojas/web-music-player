@@ -10,7 +10,6 @@ export default function useAverageColor(image: Image | null) {
 
     const calculateAverageColor = async () => {
       const result = await fastAverageColor.current.getColorAsync(image.url);
-      console.log(result);
       setAverageColor(result);
     };
 

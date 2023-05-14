@@ -7,8 +7,8 @@ export default function useAdvancingTime(initialTimeInMs: number | null, paused 
     if (!time) return;
     const interval = setInterval(() => {
       if (paused) return;
-      setTime(time + 1_000);
-    }, 1_000);
+      setTime(time + 200);
+    }, 200);
 
     return () => {
       clearInterval(interval);

@@ -1,12 +1,15 @@
 import useAdvancingTime from '@/hooks/useAdvancingTime';
 import useAverageColor from '@/hooks/useAverageColor';
 import { getBiggestImage, millisecondsToDuration, prettifyName } from '@/shared/spotify/helpers';
+import { useToggleShuffle } from '@/shared/spotify/mutation/useToggleShuffle';
 import { usePlaybackState } from '@/shared/spotify/query/usePlaybackState';
 import { ReactNode } from 'react';
 import { RiComputerLine, RiMicLine, RiPlayListLine, RiRepeatLine, RiShuffleLine } from 'react-icons/ri';
 
 export default function Playing() {
   const { playbackState } = usePlaybackState();
+
+  const { toggleShuffle } = useToggleShuffle();
 
   const container = (children?: ReactNode) => (
     <main className="p-2 relative w-full h-full flex flex-col items-center justify-center">
@@ -23,11 +26,10 @@ export default function Playing() {
   const progressMs = useAdvancingTime(playbackState?.progress_ms ?? null, !playbackState?.is_playing ?? true);
 
   if (!playbackState) return container();
-
-  const { item } = playbackState;
+  const { item, shuffle_state } = playbackState;
   const { name, artists, duration_ms } = item;
 
-  const progressPercentage = progressMs ? (progressMs / duration_ms) * 100 : 0;
+  const activeButtonClass = 'text-green-500';
 
   return container(
     <>
@@ -38,8 +40,8 @@ export default function Playing() {
         </div>
 
         <div
-          className="absolute top-0 left-0 h-full flex items-center p-2 overflow-hidden transition-all duration-1000"
-          style={{ width: `${progressPercentage}%` }}
+          className="absolute top-0 left-0 h-full flex items-center p-2 overflow-hidden "
+          style={{ width: `${progressMs ? (progressMs / duration_ms) * 100 : 0}%` }}
         >
           <div
             className="absolute top-0 left-0 w-full h-full bg-white"
@@ -52,20 +54,22 @@ export default function Playing() {
       </div>
 
       <div className="relative w-full h-fit flex items-center justify-between gap-2">
-        <RiShuffleLine className="h-12 min-h-[3rem] w-12 min-w-[3rem] p-3" />
-
         <div className="relative grow min-w-0">
-          <h2 className="text-center text-base text-ellipsis overflow-hidden whitespace-nowrap">
+          <h2 className="text-lg font-semibold text-ellipsis overflow-hidden whitespace-nowrap">
             {prettifyName(name)}
           </h2>
           {artists.length > 0 && (
-            <h3 className="text-center text-xs opacity-60 text-ellipsis overflow-hidden whitespace-nowrap">
+            <h3 className="text-sm opacity-60 text-ellipsis overflow-hidden whitespace-nowrap">
               {prettifyName(artists[0].name)}
             </h3>
           )}
         </div>
 
-        <RiRepeatLine className="h-12 min-h-[3rem] w-12 min-w-[3rem] p-3" />
+        <RiShuffleLine
+          className={`h-12 min-h-[3rem] w-12 min-w-[3rem] p-3 ${shuffle_state ? activeButtonClass : ''}`}
+          onClick={() => toggleShuffle()}
+        />
+        <RiRepeatLine className={`h-12 min-h-[3rem] w-12 min-w-[3rem] p-3`} />
       </div>
 
       <div className="relative w-full grow flex flex-col items-center justify-center" />
