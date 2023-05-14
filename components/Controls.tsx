@@ -202,7 +202,11 @@ export default function Controls({ bindVerticalDrag }: ControlsProps) {
                     width={window.innerWidth}
                     height={window.innerWidth}
                     className={`h-full w-full object-cover rounded-md pointer-events-none select-none ${
-                      images.first.missing ? '' : playbackState?.is_playing ? 'animate-image' : 'grayscale pause'
+                      images.first.missing
+                        ? ''
+                        : playbackState?.is_playing
+                        ? 'animate-image'
+                        : 'animate-image grayscale pause'
                     }`}
                   />
                 )}
@@ -219,7 +223,11 @@ export default function Controls({ bindVerticalDrag }: ControlsProps) {
                     width={window.innerWidth}
                     height={window.innerWidth}
                     className={`h-full w-full object-cover rounded-md pointer-events-none select-none ${
-                      images.second.missing ? '' : playbackState?.is_playing ? 'animate-image' : 'grayscale pause'
+                      images.second.missing
+                        ? ''
+                        : playbackState?.is_playing
+                        ? 'animate-image'
+                        : 'animate-image grayscale pause'
                     }`}
                   />
                 )}
@@ -236,7 +244,11 @@ export default function Controls({ bindVerticalDrag }: ControlsProps) {
                     width={window.innerWidth}
                     height={window.innerWidth}
                     className={`h-full w-full object-cover rounded-md pointer-events-none select-none ${
-                      images.third.missing ? '' : playbackState?.is_playing ? 'animate-image' : 'grayscale pause'
+                      images.third.missing
+                        ? ''
+                        : playbackState?.is_playing
+                        ? 'animate-image'
+                        : 'animate-image grayscale pause'
                     }`}
                   />
                 )}
